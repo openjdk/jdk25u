@@ -82,6 +82,11 @@ public final class LauncherVerifier {
         VERIFY_UNINSTALLED((verifier, cmd) -> {
             verifier.verifyInstalled(cmd, false);
         }),
+        VERIFY_APP_IMAGE_FILE((verifier, cmd) -> {
+            if (cmd.isImagePackageType()) {
+                verifier.verifyInAppImageFile(cmd);
+            }
+        }),
         VERIFY_MAC_ENTITLEMENTS((verifier, cmd) -> {
             if (TKit.isOSX() && MacHelper.appImageSigned(cmd)) {
                 verifier.verifyMacEntitlements(cmd);
@@ -101,7 +106,7 @@ public final class LauncherVerifier {
         private final BiConsumer<LauncherVerifier, JPackageCommand> action;
 
         static final List<Action> VERIFY_APP_IMAGE = List.of(
-                VERIFY_ICON, VERIFY_DESCRIPTION, VERIFY_INSTALLED, VERIFY_MAC_ENTITLEMENTS
+                VERIFY_ICON, VERIFY_DESCRIPTION, VERIFY_INSTALLED, VERIFY_APP_IMAGE_FILE, VERIFY_MAC_ENTITLEMENTS
         );
 
         static final List<Action> VERIFY_DEFAULTS = Stream.concat(
@@ -286,6 +291,45 @@ public final class LauncherVerifier {
 
         if (installed) {
             initIconVerifier(cmd).verifyFileInAppImageOnly(true).applyTo(cmd);
+        }
+    }
+
+    private void verifyInAppImageFile(JPackageCommand cmd) {
+        cmd.verifyIsOfType(PackageType.IMAGE);
+        if (!isMainLauncher()) {
+            Stream<LauncherShortcut> shortcuts;
+            if (TKit.isWindows()) {
+                shortcuts = Stream.of(LauncherShortcut.WIN_DESKTOP_SHORTCUT, LauncherShortcut.WIN_START_MENU_SHORTCUT);
+            } else if (TKit.isLinux()) {
+                shortcuts = Stream.of(LauncherShortcut.LINUX_SHORTCUT);
+            } else {
+                shortcuts = Stream.of();
+            }
+
+            var aif = AppImageFile.load(cmd.outputBundle());
+            var aifFileName = AppImageFile.getPathInAppImage(Path.of("")).getFileName();
+
+            var aifProps = Objects.requireNonNull(aif.addLaunchers().get(name));
+
+            shortcuts.forEach(shortcut -> {
+                var recordedShortcut = aifProps.get(shortcut.appImageFilePropertyName());
+                properties.flatMap(props -> {
+                    return props.findProperty(shortcut.propertyName());
+                }).ifPresentOrElse(expectedShortcut -> {
+                    TKit.assertNotNull(recordedShortcut, String.format(
+                            "Check shortcut [%s] of launcher [%s] is recorded in %s file",
+                            shortcut, name, aifFileName));
+                    TKit.assertEquals(
+                            StartupDirectory.parse(expectedShortcut),
+                            StartupDirectory.parse(recordedShortcut),
+                            String.format("Check the value of shortcut [%s] of launcher [%s] recorded in %s file",
+                                    shortcut, name, aifFileName));
+                }, () -> {
+                    TKit.assertNull(recordedShortcut, String.format(
+                            "Check shortcut [%s] of launcher [%s] is NOT recorded in %s file",
+                            shortcut, name, aifFileName));
+                });
+            });
         }
     }
 
