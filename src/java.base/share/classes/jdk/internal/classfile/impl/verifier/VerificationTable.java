@@ -24,9 +24,10 @@
  */
 package jdk.internal.classfile.impl.verifier;
 
-import static jdk.internal.classfile.impl.verifier.VerificationType.ITEM_Object;
-import static jdk.internal.classfile.impl.verifier.VerificationType.ITEM_Uninitialized;
-import static jdk.internal.classfile.impl.verifier.VerificationType.ITEM_UninitializedThis;
+import java.util.ArrayList;
+import java.util.List;
+
+import static jdk.internal.classfile.impl.StackMapGenerator.*;
 
 /**
  * @see <a href="https://raw.githubusercontent.com/openjdk/jdk/master/src/hotspot/share/classfile/stackMapTable.hpp">hotspot/share/classfile/stackMapTable.hpp</a>
@@ -158,11 +159,6 @@ class VerificationTable {
             }
         }
 
-        private static final int
-                        SAME_LOCALS_1_STACK_ITEM_EXTENDED = 247,
-                        SAME_EXTENDED = 251,
-                        FULL = 255;
-
         public int get_frame_count() {
             return _frame_count;
         }
@@ -204,10 +200,10 @@ class VerificationTable {
 
         VerificationType parse_verification_type(int[] flags) {
             int tag = _stream.get_u1();
-            if (tag < ITEM_UninitializedThis) {
+            if (tag < ITEM_UNINITIALIZED_THIS) {
                 return VerificationType.from_tag(tag, _verifier);
             }
-            if (tag == ITEM_Object) {
+            if (tag == ITEM_OBJECT) {
                 int class_index = _stream.get_u2();
                 int nconstants = _cp.entryCount();
                 if (class_index <= 0 || class_index >= nconstants || _cp.tagAt(class_index) != VerifierImpl.JVM_CONSTANT_Class) {
@@ -215,13 +211,13 @@ class VerificationTable {
                 }
                 return VerificationType.reference_type(_cp.classNameAt(class_index));
             }
-            if (tag == ITEM_UninitializedThis) {
+            if (tag == ITEM_UNINITIALIZED_THIS) {
                 if (flags != null) {
                     flags[0] |= VerificationFrame.FLAG_THIS_UNINIT;
                 }
                 return VerificationType.uninitialized_this_type;
             }
-            if (tag == ITEM_Uninitialized) {
+            if (tag == ITEM_UNINITIALIZED) {
                 int offset = _stream.get_u2();
                 if (offset >= _code_length || _code_data[offset] != VerifierImpl.NEW_OFFSET) {
                     _verifier.classError("StackMapTable format error: bad offset for Uninitialized");
@@ -237,8 +233,8 @@ class VerificationTable {
             int offset;
             VerificationType[] locals = null;
             int frame_type = _stream.get_u1();
-            if (frame_type < 64) {
-                if (first) {
+            if (frame_type <= SAME_FRAME_END) {
+                if (_first) {
                     offset = frame_type;
                     if (pre_frame.locals_size() > 0) {
                         locals = new VerificationType[pre_frame.locals_size()];
@@ -253,15 +249,15 @@ class VerificationTable {
                 }
                 return frame;
             }
-            if (frame_type < 128) {
-                if (first) {
-                    offset = frame_type - 64;
-                    if (pre_frame.locals_size() > 0) {
-                        locals = new VerificationType[pre_frame.locals_size()];
+            if (frame_type <= SAME_LOCALS_1_STACK_ITEM_FRAME_END) {
+                if (_first) {
+                    offset = frame_type - SAME_LOCALS_1_STACK_ITEM_FRAME_START;
+                    if (_prev_frame.locals_size() > 0) {
+                        locals = new VerificationType[_prev_frame.locals_size()];
                     }
                 } else {
-                    offset = pre_frame.offset() + frame_type - 63;
-                    locals = pre_frame.locals();
+                    offset = _prev_frame.offset() + frame_type - SAME_LOCALS_1_STACK_ITEM_FRAME_START + 1;
+                    locals = _prev_frame.locals();
                 }
                 VerificationType[] stack = new VerificationType[2];
                 int stack_size = 1;
@@ -305,10 +301,10 @@ class VerificationTable {
                 }
                 return frame;
             }
-            if (frame_type <= SAME_EXTENDED) {
-                locals = pre_frame.locals();
-                int length = pre_frame.locals_size();
-                int chops = SAME_EXTENDED - frame_type;
+            if (frame_type <= SAME_FRAME_EXTENDED) {
+                locals = _prev_frame.locals();
+                int length = _prev_frame.locals_size();
+                int chops = SAME_FRAME_EXTENDED - frame_type;
                 int new_length = length;
                 int flags = pre_frame.flags();
                 if (chops != 0) {
@@ -337,9 +333,9 @@ class VerificationTable {
                     frame.copy_locals(pre_frame);
                 }
                 return frame;
-            } else if (frame_type < SAME_EXTENDED + 4) {
-                int appends = frame_type - SAME_EXTENDED;
-                int real_length = pre_frame.locals_size();
+            } else if (frame_type <= APPEND_FRAME_END) {
+                int appends = frame_type - APPEND_FRAME_START + 1;
+                int real_length = _prev_frame.locals_size();
                 int new_length = real_length + appends*2;
                 locals = new VerificationType[new_length];
                 VerificationType[] pre_locals = pre_frame.locals();
@@ -365,7 +361,7 @@ class VerificationTable {
                 frame = new VerificationFrame(offset, flags[0], real_length, 0, max_locals, max_stack, locals, null, _verifier);
                 return frame;
             }
-            if (frame_type == FULL) {
+            if (frame_type == FULL_FRAME) {
                 int flags[] = new int[]{0};
                 int locals_size = _stream.get_u2();
                 int real_locals_size = 0;
