@@ -41,6 +41,7 @@ import sun.security.x509.AccessDescription;
 import sun.security.x509.AlgorithmId;
 import sun.security.x509.AuthorityInfoAccessExtension;
 import sun.security.x509.AuthorityKeyIdentifierExtension;
+import sun.security.x509.IPAddressName;
 import sun.security.x509.SubjectKeyIdentifierExtension;
 import sun.security.x509.BasicConstraintsExtension;
 import sun.security.x509.CertificateSerialNumber;
