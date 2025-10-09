@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,45 +21,30 @@
  * questions.
  */
 
+import java.awt.Window;
 
-function readMsi(msiPath, callback) {
-    var installer = new ActiveXObject('WindowsInstaller.Installer')
-    var database = installer.OpenDatabase(msiPath, 0 /* msiOpenDatabaseModeReadOnly */)
+/**
+ * @test
+ * @bug 8346952
+ * @summary Verifies no exception occurs when triggering updateCG()
+ * for an ownerless window.
+ * @key headful
+ */
+public final class BogusFocusableWindowState {
 
-    return callback(database)
-}
-
-
-function queryAllProperties(db) {
-    var reply = {}
-
-    var view = db.OpenView("SELECT `Property`, `Value` FROM Property")
-    view.Execute()
-
-    try {
-        while(true) {
-            var record = view.Fetch()
-            if (!record) {
-                break
+    public static void main(String[] args) {
+        Window frame = new Window(null) {
+            @Override
+            public boolean getFocusableWindowState() {
+                removeNotify();
+                return true;
             }
-
-            var name = record.StringData(1)
-            var value = record.StringData(2)
-
-            reply[name] = value
+        };
+        try {
+            frame.pack();
+            frame.setVisible(true);
+        } finally {
+            frame.dispose();
         }
-    } finally {
-        view.Close()
     }
-
-    return reply
 }
-
-
-(function () {
-    var msi = WScript.arguments(0)
-    var propName = WScript.arguments(1)
-
-    var props = readMsi(msi, queryAllProperties)
-    WScript.Echo(props[propName])
-})()
