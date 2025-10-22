@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,27 +21,24 @@
  * questions.
  */
 
-#include "jni.h"
-#include "jni_util.h"
-#include "jvm.h"
-#include "java_io_Console.h"
+/*
+ * @test
+ * @bug 8354469
+ * @summary ensure password can be read from user's System.in
+ * @library /test/lib
+ * @modules java.base/sun.security.tools.keytool
+ */
 
-#include <stdlib.h>
-#include <unistd.h>
+import jdk.test.lib.SecurityTools;
 
-JNIEXPORT jint JNICALL
-Java_java_io_Console_ttyStatus(JNIEnv *env, jclass cls)
-{
-    jint ret = 0;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
-    if (isatty(fileno(stdin))) {
-        ret |= java_io_Console_TTY_STDIN_MASK;
+public class SetInPassword {
+    public static void main(String[] args) throws Exception {
+        SecurityTools.keytool("-keystore ks -storepass changeit -genkeypair -alias a -dname CN=A -keyalg EC")
+                .shouldHaveExitValue(0);
+        System.setIn(new ByteArrayInputStream("changeit".getBytes(StandardCharsets.UTF_8)));
+        sun.security.tools.keytool.Main.main("-keystore ks -alias a -certreq".split(" "));
     }
-    if (isatty(fileno(stdout))) {
-        ret |= java_io_Console_TTY_STDOUT_MASK;
-    }
-    if (isatty(fileno(stderr))) {
-        ret |= java_io_Console_TTY_STDERR_MASK;
-    }
-    return ret;
 }
