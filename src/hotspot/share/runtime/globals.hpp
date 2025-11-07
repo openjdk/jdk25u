@@ -242,8 +242,10 @@ const int ObjectAlignmentInBytes = 8;
                                                                             \
   product(size_t, LargePageSizeInBytes, 0,                                  \
           "Maximum large page size used (0 will use the default large "     \
-          "page size for the environment as the maximum)")                  \
+          "page size for the environment as the maximum) "                  \
+          "(must be a power of 2)")                                         \
           range(0, max_uintx)                                               \
+          constraint(LargePageSizeInBytesConstraintFunc, AtParse)           \
                                                                             \
   product(size_t, LargePageHeapSizeThreshold, 128*M,                        \
           "Use large pages if maximum heap is at least this big")           \
@@ -487,6 +489,9 @@ const int ObjectAlignmentInBytes = 8;
                                                                             \
   develop(bool, ZapFillerObjects, trueInDebug,                              \
           "Zap filler objects")                                             \
+                                                                            \
+  develop(bool, ZapCHeap, trueInDebug,                                      \
+          "Zap allocated/freed C heap space")                               \
                                                                             \
   develop(bool, ZapTLAB, trueInDebug,                                       \
           "Zap allocated TLABs")                                            \
@@ -2013,9 +2018,6 @@ const int ObjectAlignmentInBytes = 8;
           "Minimal number of elements in a sorted collection to prefer"     \
           "binary search over simple linear search." )                      \
                                                                             \
-  product(bool, UseClassMetaspaceForAllClasses, false, DIAGNOSTIC,          \
-          "Use the class metaspace for all classes including "              \
-          "abstract and interface classes.")                                \
 
 // end of RUNTIME_FLAGS
 
