@@ -206,6 +206,7 @@ class JfrCPUSamplerThread : public NonJavaThread {
   volatile bool _is_async_processing_of_cpu_time_jfr_requests_triggered;
   volatile bool _warned_about_timer_creation_failure;
   volatile bool _signal_handler_installed;
+  DEBUG_ONLY(volatile bool _out_of_stack_walking_enabled = true;)
 
   static const u4 STOP_SIGNAL_BIT = 0x80000000;
 
@@ -252,6 +253,12 @@ public:
   virtual void print_on(outputStream* st) const;
 
   void trigger_async_processing_of_cpu_time_jfr_requests();
+
+  #ifdef ASSERT
+  void set_out_of_stack_walking_enabled(bool runnable) {
+    AtomicAccess::release_store(&_out_of_stack_walking_enabled, runnable);
+  }
+  #endif
 };
 
 JfrCPUSamplerThread::JfrCPUSamplerThread(JfrCPUSamplerThrottle& throttle) :
@@ -354,10 +361,11 @@ void JfrCPUSamplerThread::run() {
       recompute_period_if_needed();
       last_recompute_check = os::javaTimeNanos();
     }
-
-    if (Atomic::cmpxchg(&_is_async_processing_of_cpu_time_jfr_requests_triggered, true, false)) {
-      stackwalk_threads_in_native();
-    }
+    DEBUG_ONLY(if (AtomicAccess::load_acquire(&_out_of_stack_walking_enabled)) {)
+      if (AtomicAccess::cmpxchg(&_is_async_processing_of_cpu_time_jfr_requests_triggered, true, false)) {
+        stackwalk_threads_in_native();
+      }
+    DEBUG_ONLY(})
     os::naked_sleep(100);
   }
 }
@@ -546,6 +554,17 @@ void JfrCPUTimeThreadSampling::handle_timer_signal(siginfo_t* info, void* contex
   _sampler->handle_timer_signal(info, context);
   _sampler->decrement_signal_handler_count();
 }
+
+#ifdef ASSERT
+bool JfrCPUTimeThreadSampling::set_out_of_stack_walking_enabled(bool runnable) {
+  if (_instance != nullptr && _instance->_sampler != nullptr) {
+    _instance->_sampler->set_out_of_stack_walking_enabled(runnable);
+    return true;
+  } else {
+    return false;
+  }
+}
+#endif
 
 void JfrCPUSamplerThread::sample_thread(JfrSampleRequest& request, void* ucontext, JavaThread* jt, JfrThreadLocal* tl, JfrTicks& now) {
   JfrSampleRequestBuilder::build_cpu_time_sample_request(request, ucontext, jt, jt->jfr_thread_local(), now);
@@ -814,5 +833,12 @@ void JfrCPUTimeThreadSampling::on_javathread_create(JavaThread* thread) {
 
 void JfrCPUTimeThreadSampling::on_javathread_terminate(JavaThread* thread) {
 }
+
+#ifdef ASSERT
+bool JfrCPUTimeThreadSampling::set_out_of_stack_walking_enabled(bool runnable) {
+  warn();
+  return false;
+}
+#endif
 
 #endif // defined(LINUX) && defined(INCLUDE_JFR)
