@@ -256,7 +256,7 @@ public:
 
   #ifdef ASSERT
   void set_out_of_stack_walking_enabled(bool runnable) {
-    AtomicAccess::release_store(&_out_of_stack_walking_enabled, runnable);
+    Atomic::release_store(&_out_of_stack_walking_enabled, runnable);
   }
   #endif
 };
@@ -361,8 +361,8 @@ void JfrCPUSamplerThread::run() {
       recompute_period_if_needed();
       last_recompute_check = os::javaTimeNanos();
     }
-    DEBUG_ONLY(if (AtomicAccess::load_acquire(&_out_of_stack_walking_enabled)) {)
-      if (AtomicAccess::cmpxchg(&_is_async_processing_of_cpu_time_jfr_requests_triggered, true, false)) {
+    DEBUG_ONLY(if (Atomic::load_acquire(&_out_of_stack_walking_enabled)) {)
+      if (Atomic::cmpxchg(&_is_async_processing_of_cpu_time_jfr_requests_triggered, true, false)) {
         stackwalk_threads_in_native();
       }
     DEBUG_ONLY(})

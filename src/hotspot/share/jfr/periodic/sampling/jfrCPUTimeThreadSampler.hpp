@@ -152,10 +152,7 @@ private:
 
   static void on_javathread_create(JavaThread* thread);
   static void on_javathread_terminate(JavaThread* thread);
-<<<<<<< HEAD
-=======
   DEBUG_ONLY(static bool set_out_of_stack_walking_enabled(bool runnable));
->>>>>>> d27649fe22a (8367302: New test jdk/jfr/event/profiling/TestCPUTimeSampleQueueAutoSizes.java from JDK-8366082 is failing)
 };
 
 #endif // defined(LINUX)
