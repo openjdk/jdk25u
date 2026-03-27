@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,6 +25,7 @@
 #ifndef SHARE_CLASSFILE_COMPACTHASHTABLE_HPP
 #define SHARE_CLASSFILE_COMPACTHASHTABLE_HPP
 
+#include "cds/aotCompressedPointers.hpp"
 #include "cds/cds_globals.hpp"
 #include "oops/array.hpp"
 #include "oops/symbol.hpp"
@@ -122,6 +123,9 @@ public:
   ~CompactHashtableWriter();
 
   void add(unsigned int hash, u4 value);
+  void add(unsigned int hash, AOTCompressedPointers::narrowPtr encoded_value) {
+    add(hash, cast_to_u4(encoded_value));
+  }
 
 private:
   void allocate_table();
