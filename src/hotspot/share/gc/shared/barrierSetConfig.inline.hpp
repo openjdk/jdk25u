@@ -42,5 +42,8 @@
 #if INCLUDE_ZGC
 #include "gc/z/zBarrierSet.inline.hpp"
 #endif
+#if INCLUDE_HGC
+#include "gc/h/hBarrierSet.inline.hpp"
+#endif
 
 #endif // SHARE_GC_SHARED_BARRIERSETCONFIG_INLINE_HPP

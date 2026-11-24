@@ -41,6 +41,7 @@
 #include "compiler/oopMap.hpp"
 #include "gc/shared/barrierSet.hpp"
 #include "gc/shared/c1/barrierSetC1.hpp"
+#include "gc/h/hBarrierSetRuntime.hpp"
 #include "gc/shared/collectedHeap.hpp"
 #include "interpreter/bytecode.hpp"
 #include "interpreter/interpreter.hpp"
@@ -349,6 +350,8 @@ const char* Runtime1::name_for_address(address entry) {
   FUNCTION_CASE(entry, SharedRuntime::lrem);
   FUNCTION_CASE(entry, SharedRuntime::dtrace_method_entry);
   FUNCTION_CASE(entry, SharedRuntime::dtrace_method_exit);
+  FUNCTION_CASE(entry, HGCBarrierSetRuntime::write_ref_field_pre_entry);
+  FUNCTION_CASE(entry, HGCBarrierSetRuntime::write_ref_field_post_addr_entry);
   FUNCTION_CASE(entry, is_instance_of);
   FUNCTION_CASE(entry, trace_block_entry);
 #ifdef JFR_HAVE_INTRINSICS

@@ -48,6 +48,9 @@
 #if INCLUDE_ZGC
 #include "gc/z/vmStructs_z.hpp"
 #endif
+#if INCLUDE_HGC
+#include "gc/h/vmStructs_h.hpp"
+#endif
 
 #define VM_STRUCTS_GC(nonstatic_field,                                                                                               \
                       volatile_static_field,                                                                                         \
@@ -69,9 +72,12 @@
   SHENANDOAHGC_ONLY(VM_STRUCTS_SHENANDOAH(nonstatic_field,                                                                           \
                                volatile_nonstatic_field,                                                                             \
                                static_field))                                                                                        \
-  ZGC_ONLY(VM_STRUCTS_Z(nonstatic_field,                                                                                             \
-                               volatile_nonstatic_field,                                                                             \
-                               static_field))                                                                                        \
+ZGC_ONLY(VM_STRUCTS_Z(nonstatic_field,                             \
+                               volatile_nonstatic_field,             \
+                               static_field))                        \
+  HGC_ONLY(VM_STRUCTS_HGC(nonstatic_field,                           \
+                           volatile_nonstatic_field,                 \
+                           static_field))                            \
                                                                                                                                      \
   /**********************************************************************************/                                               \
   /* Generation and Space hierarchies                                               */                                               \
@@ -121,9 +127,12 @@
   SHENANDOAHGC_ONLY(VM_TYPES_SHENANDOAH(declare_type,                     \
                              declare_toplevel_type,                       \
                              declare_integer_type))                       \
-  ZGC_ONLY(VM_TYPES_Z(declare_type,                                       \
-                             declare_toplevel_type,                       \
-                             declare_integer_type))                       \
+ZGC_ONLY(VM_TYPES_Z(declare_type,                                  \
+                             declare_toplevel_type,                  \
+                             declare_integer_type))                  \
+  HGC_ONLY(VM_TYPES_HGC(declare_type,                                \
+                         declare_toplevel_type,                      \
+                         declare_integer_type))                      \
                                                                           \
   /******************************************/                            \
   /* Generation and space hierarchies       */                            \
@@ -175,8 +184,10 @@
                                           declare_constant_with_value))     \
   SHENANDOAHGC_ONLY(VM_INT_CONSTANTS_SHENANDOAH(declare_constant,           \
                                      declare_constant_with_value))          \
-  ZGC_ONLY(VM_INT_CONSTANTS_Z(declare_constant,                             \
-                                     declare_constant_with_value))          \
+ZGC_ONLY(VM_INT_CONSTANTS_Z(declare_constant,                      \
+                              declare_constant_with_value))          \
+  HGC_ONLY(VM_INT_CONSTANTS_HGC(declare_constant,                    \
+                                 declare_constant_with_value))       \
                                                                             \
   /********************************************/                            \
   /* Generation and Space Hierarchy Constants */                            \
@@ -197,6 +208,7 @@
   declare_constant(CollectedHeap::Serial)                                   \
   declare_constant(CollectedHeap::Parallel)                                 \
   declare_constant(CollectedHeap::G1)                                       \
+  declare_constant(CollectedHeap::HGC)                                       \
 
 #define VM_LONG_CONSTANTS_GC(declare_constant)                              \
   ZGC_ONLY(VM_LONG_CONSTANTS_Z(declare_constant))

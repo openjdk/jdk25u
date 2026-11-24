@@ -508,6 +508,11 @@ class ConcurrentHashTable : public CHeapObj<MT> {
   template <typename SCAN_FUNC>
   void do_scan(Thread* thread, SCAN_FUNC& scan_f);
 
+  // Like do_scan, but may also be entered while a safepoint is active.
+  // HGC pauses refinement before using this path.
+  template <typename SCAN_FUNC>
+  void do_scan_allow_safepoint(Thread* thread, SCAN_FUNC& scan_f);
+
   // Visits nodes for buckets in range [start_idx, stop_id) with FUNC.
   template <typename FUNC>
   static bool do_scan_for_range(FUNC& scan_f, size_t start_idx, size_t stop_idx, InternalTable *table);

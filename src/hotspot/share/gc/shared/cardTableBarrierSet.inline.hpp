@@ -28,7 +28,6 @@
 #include "gc/shared/cardTableBarrierSet.hpp"
 
 #include "gc/shared/cardTable.hpp"
-#include "runtime/atomic.hpp"
 
 template <DecoratorSet decorators, typename T>
 inline void CardTableBarrierSet::write_ref_field_post(T* field) {

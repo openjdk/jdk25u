@@ -45,6 +45,9 @@
 #if INCLUDE_ZGC
 #include "gc/z/z_globals.hpp"
 #endif
+#if INCLUDE_HGC
+#include "gc/h/h_globals.hpp"
+#endif
 
 #define GC_FLAGS(develop,                                                   \
                  develop_pd,                                                \
@@ -100,7 +103,15 @@
     product_pd,                                                             \
     range,                                                                  \
     constraint))                                                            \
-                                                                            \
+                                                                             \
+  HGC_ONLY(GC_H_FLAGS(                                                      \
+    develop,                                                                \
+    develop_pd,                                                             \
+    product,                                                                \
+    product_pd,                                                             \
+    range,                                                                  \
+    constraint))                                                            \
+                                                                             \
   /* gc */                                                                  \
                                                                             \
   product(bool, UseSerialGC, false,                                         \
@@ -120,6 +131,9 @@
                                                                             \
   product(bool, UseShenandoahGC, false,                                     \
           "Use the Shenandoah garbage collector")                           \
+                                                                            \
+  product(bool, UseHGC, false, EXPERIMENTAL,                                \
+          "Use the H garbage collector")                                    \
                                                                             \
   /* notice: the max range value here is INT_MAX not UINT_MAX  */           \
   /* to protect from overflows                                 */           \

@@ -45,6 +45,9 @@
 #if INCLUDE_ZGC
 #include "gc/z/zArguments.hpp"
 #endif
+#if INCLUDE_HGC
+#include "gc/h/hArguments.hpp"
+#endif
 
 struct IncludedGC {
   bool&               _flag;
@@ -62,6 +65,7 @@ struct IncludedGC {
     SERIALGC_ONLY(static SerialArguments     serialArguments;)
 SHENANDOAHGC_ONLY(static ShenandoahArguments shenandoahArguments;)
          ZGC_ONLY(static ZArguments          zArguments;)
+         HGC_ONLY(static HGCArguments        hArguments;)
 
 // Table of included GCs, for translating between command
 // line flag, CollectedHeap::Name and GCArguments instance.
@@ -72,6 +76,7 @@ static const IncludedGC IncludedGCs[] = {
     SERIALGC_ONLY_ARG(IncludedGC(UseSerialGC,        CollectedHeap::Serial,     serialArguments,     "serial gc"))
 SHENANDOAHGC_ONLY_ARG(IncludedGC(UseShenandoahGC,    CollectedHeap::Shenandoah, shenandoahArguments, "shenandoah gc"))
          ZGC_ONLY_ARG(IncludedGC(UseZGC,             CollectedHeap::Z,          zArguments,          "z gc"))
+         HGC_ONLY_ARG(IncludedGC(UseHGC,             CollectedHeap::HGC,        hArguments,          "h gc"))
 };
 
 #define FOR_EACH_INCLUDED_GC(var)                                            \
@@ -92,6 +97,7 @@ void GCConfig::fail_if_non_included_gc_is_selected() {
   NOT_SERIALGC(    FAIL_IF_SELECTED(UseSerialGC));
   NOT_SHENANDOAHGC(FAIL_IF_SELECTED(UseShenandoahGC));
   NOT_ZGC(         FAIL_IF_SELECTED(UseZGC));
+  NOT_HGC(         FAIL_IF_SELECTED(UseHGC));
 }
 
 void GCConfig::select_gc_ergonomically() {

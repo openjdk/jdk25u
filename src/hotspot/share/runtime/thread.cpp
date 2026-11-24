@@ -46,6 +46,7 @@
 #include "runtime/safepointMechanism.inline.hpp"
 #include "runtime/thread.inline.hpp"
 #include "runtime/threadSMR.inline.hpp"
+#include "utilities/ostream.hpp"
 #include "utilities/macros.hpp"
 #include "utilities/spinYield.hpp"
 #if INCLUDE_JFR

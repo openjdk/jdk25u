@@ -43,7 +43,7 @@ uint CardTable::_card_size = 0;
 uint CardTable::_card_size_in_words = 0;
 
 void CardTable::initialize_card_size() {
-  assert(UseG1GC || UseParallelGC || UseSerialGC || UseShenandoahGC,
+  assert(UseG1GC || UseParallelGC || UseSerialGC || UseShenandoahGC HGC_ONLY(|| UseHGC),
          "Initialize card size should only be called by card based collectors.");
 
   _card_size = GCCardSizeInBytes;

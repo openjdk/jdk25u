@@ -56,6 +56,17 @@ void SuspendibleThreadSet::join() {
   DEBUG_ONLY(Thread::current()->set_suspendible_thread();)
 }
 
+bool SuspendibleThreadSet::try_join() {
+  assert(!Thread::current()->is_suspendible_thread(), "Thread already joined");
+  MonitorLocker ml(STS_lock, Mutex::_no_safepoint_check_flag);
+  if (should_yield()) {
+    return false;
+  }
+  _nthreads++;
+  DEBUG_ONLY(Thread::current()->set_suspendible_thread();)
+  return true;
+}
+
 void SuspendibleThreadSet::leave() {
   assert(Thread::current()->is_suspendible_thread(), "Thread not joined");
   MonitorLocker ml(STS_lock, Mutex::_no_safepoint_check_flag);

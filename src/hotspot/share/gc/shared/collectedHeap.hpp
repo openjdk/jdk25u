@@ -191,7 +191,8 @@ protected:
     G1,
     Epsilon,
     Z,
-    Shenandoah
+    Shenandoah,
+    HGC
   };
 
  protected:

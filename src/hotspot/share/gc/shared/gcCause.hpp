@@ -85,6 +85,8 @@ class GCCause : public AllStatic {
     _z_proactive,
     _z_high_usage,
 
+    HGC_ONLY_ARG(_hgc_cset_complete)
+
     _last_gc_cause
   };
 

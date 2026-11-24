@@ -1158,6 +1158,18 @@ inline void ConcurrentHashTable<CONFIG, MT>::
 template <typename CONFIG, MemTag MT>
 template <typename SCAN_FUNC>
 inline void ConcurrentHashTable<CONFIG, MT>::
+  do_scan_allow_safepoint(Thread* thread, SCAN_FUNC& scan_f)
+{
+  assert(_resize_lock_owner != thread, "Re-size lock held");
+  lock_resize_lock(thread);
+  do_scan_locked(thread, scan_f);
+  unlock_resize_lock(thread);
+  assert(_resize_lock_owner != thread, "Re-size lock held");
+}
+
+template <typename CONFIG, MemTag MT>
+template <typename SCAN_FUNC>
+inline void ConcurrentHashTable<CONFIG, MT>::
   do_safepoint_scan(SCAN_FUNC& scan_f)
 {
   // We only allow this method to be used during a safepoint.

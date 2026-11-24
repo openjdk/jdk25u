@@ -39,6 +39,7 @@
 class SuspendibleThreadSet : public AllStatic {
   friend class SuspendibleThreadSetJoiner;
   friend class SuspendibleThreadSetLeaver;
+  friend class SuspendibleThreadSetTryJoiner;
 
 private:
   static uint          _nthreads;
@@ -50,6 +51,10 @@ private:
 
   // Add the current thread to the set. May block if a suspension is in progress.
   static void join();
+
+  // Add the current thread to the set unless a suspension is already in
+  // progress. Returns false without joining in that case.
+  static bool try_join();
 
   // Removes the current thread from the set.
   static void leave();
@@ -120,6 +125,21 @@ public:
   ~SuspendibleThreadSetLeaver() {
     if (_active) {
       SuspendibleThreadSet::join();
+    }
+  }
+};
+
+class SuspendibleThreadSetTryJoiner : public StackObj {
+private:
+  bool _active;
+
+public:
+  explicit SuspendibleThreadSetTryJoiner(bool active = true) :
+    _active(active && SuspendibleThreadSet::try_join()) {}
+
+  ~SuspendibleThreadSetTryJoiner() {
+    if (_active) {
+      SuspendibleThreadSet::leave();
     }
   }
 };

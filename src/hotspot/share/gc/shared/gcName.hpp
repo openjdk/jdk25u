@@ -40,6 +40,7 @@ enum GCName {
   Shenandoah,
   ShenandoahYoung,
   ShenandoahOld,
+  HGC,
   NA,
   GCNameEndSentinel
 };
@@ -60,6 +61,7 @@ class GCNameHelper {
       case Shenandoah: return "Shenandoah";
       case ShenandoahYoung: return "Shenandoah Young";
       case ShenandoahOld: return "Shenandoah Old";
+      case HGC: return "HGC";
       case NA: return "N/A";
       default: ShouldNotReachHere(); return nullptr;
     }

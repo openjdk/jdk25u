@@ -29,6 +29,8 @@
 #include "gc/shared/modRefBarrierSet.hpp"
 #include "utilities/align.hpp"
 
+class BarrierSetNMethod;
+
 // This kind of "BarrierSet" allows a "CollectedHeap" to detect and
 // enumerate ref fields that have been modified (since the last
 // enumeration.)
@@ -52,6 +54,12 @@ protected:
   bool       _defer_initial_card_mark;
   CardTable* _card_table;
 
+  CardTableBarrierSet(BarrierSetAssembler* barrier_set_assembler,
+                      BarrierSetC1* barrier_set_c1,
+                      BarrierSetC2* barrier_set_c2,
+                      CardTable* card_table,
+                      BarrierSetNMethod* barrier_set_nmethod,
+                      const BarrierSet::FakeRtti& fake_rtti);
   CardTableBarrierSet(BarrierSetAssembler* barrier_set_assembler,
                       BarrierSetC1* barrier_set_c1,
                       BarrierSetC2* barrier_set_c2,

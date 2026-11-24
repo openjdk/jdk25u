@@ -119,6 +119,9 @@ const char* GCCause::to_string(GCCause::Cause cause) {
     case _z_high_usage:
       return "High Usage";
 
+    HGC_ONLY(case _hgc_cset_complete:
+      return "HGC Collection Set Complete";)
+
     case _last_gc_cause:
       return "ILLEGAL VALUE - last gc cause - ILLEGAL VALUE";
 

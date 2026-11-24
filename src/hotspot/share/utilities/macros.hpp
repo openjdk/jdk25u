@@ -161,6 +161,24 @@
 #define NOT_EPSILONGC_RETURN_(code) { return code; }
 #endif // INCLUDE_EPSILONGC
 
+#ifndef INCLUDE_HGC
+#define INCLUDE_HGC 1
+#endif // INCLUDE_HGC
+
+#if INCLUDE_HGC
+#define HGC_ONLY(x) x
+#define HGC_ONLY_ARG(arg) arg,
+#define NOT_HGC(x)
+#define NOT_HGC_RETURN        /* next token must be ; */
+#define NOT_HGC_RETURN_(code) /* next token must be ; */
+#else
+#define HGC_ONLY(x)
+#define HGC_ONLY_ARG(arg)
+#define NOT_HGC(x) x
+#define NOT_HGC_RETURN        {}
+#define NOT_HGC_RETURN_(code) { return code; }
+#endif // INCLUDE_HGC
+
 #ifndef INCLUDE_G1GC
 #define INCLUDE_G1GC 1
 #endif // INCLUDE_G1GC

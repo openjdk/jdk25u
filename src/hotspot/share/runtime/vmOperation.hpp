@@ -72,6 +72,8 @@
   template(XMarkEnd)                              \
   template(XRelocateStart)                        \
   template(XVerify)                               \
+  HGC_ONLY(template(HGCCollect))                  \
+  HGC_ONLY(template(HGCRelease))                  \
   template(HandshakeAllThreads)                   \
   template(PopulateDumpSharedSpace)               \
   template(JNIFunctionTableCopier)                \
